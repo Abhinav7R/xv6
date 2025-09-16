@@ -1,0 +1,140 @@
+Specification 3 Report
+
+Following are the results of scheduler tests run for 
+RR, FCFS and MLFQ on 1 CPU.
+
+The Avg run time is almost the same whereas the wait 
+times differ in the 3 scheduling mechanisms.
+
+RoundRobin:
+
+Process 5 finished
+Process 7 finished
+Process 8 finished
+Process 6 finished
+Process 9 finished
+Process 0 finished
+Process 1 finished
+Process 2 finished
+Process 3 finished
+Process 4 finished
+Average rtime 16,  wtime 160
+
+FCFS:
+
+Process 5 finished
+Process 6 finished
+Process 7 finished
+Process 8 finished
+Process 9 finished
+Process 0 finished
+Process 1 finished
+Process 2 finished
+Process 3 finished
+Process 4 finished
+Average rtime 14,  wtime 131
+
+MLFQ:
+
+Process 5 finished
+Process 6 finished
+Process 7 finished
+Process 8 finished
+Process 9 finished
+Process 0 finished
+Process 1 finished
+Process 2 finished
+Process 3 finished
+Process 4 finished
+Average rtime 15,  wtime 136
+
+IMPLEMENTATIONS:
+
+RoundRobin:
+
+in proc.c
+Basically, it iterates through process array.
+Acquires a lock for each process.
+Checks if a process is 'RUNNABLE.'
+If so, marks it as 'RUNNING.'
+Assigns it to the CPU.
+Performs a context switch to execute it.
+Resets the CPU's process.
+Releases the lock.
+Repeats for all processes.
+
+in trap.c
+In this file, for which_dev==2 i.e clock interrupt
+we will just call the yield function which just
+gives the CPU to process to run for one scheduling 
+round.
+
+The wait time in this, is the maximum beacuse: if a 
+process which requires more time to run is scheduled 
+first then the other processes will wait for it to 
+get executed. This makes wait time increase for RR.
+
+FCFS:
+
+in proc.c
+Initialise a variable my_ctime to int max.
+Here also, we iterate through process array.
+Acquires a lock for each process.
+Checks if a process is 'RUNNABLE.'
+Now, we check if the creation time of this process
+is lesser than my_ctime then we schedule the 
+process by making it RUNNING, assign it to CPU,
+do context switching and reset the CPU's process and
+releases the lock. We also update the my_ctime to 
+this process' creation time. 
+This is done for all processes in the processes list.
+
+MLFQ:
+
+proc.h
+We need a few variables here. 
+A variable called in_queue to check if process
+is in queue or not.
+We add wait time as wtime. Its updated in update_time
+when the process is in either SLEEPING or RUNNABLE
+state. 
+Similar to rtime, we have queuetime which is updated
+when process is in RUNNING state.
+We make the queuetime=0 and wtime=0 when the process
+is added to the queues.
+
+For queues, I have maintained a queue_num variable in 
+the process struct which can take 0,1,2,3 as values.
+
+When a process is created either by forking or in 
+userinit, we add the process to queue 0 and initialise
+the variables.
+
+in proc.c
+In scheduler, we iterate through the process list.
+Check if the process is runnable, and in the queue
+we change the priority by comapring the queuetime
+and wtime with the corresponding timerticks of the
+queue. If the proccess is runnable and not in queue
+we add it to the queue. If a process is in sleeping 
+or zombie state remove it from queue.
+Then we find the highest priority process and run it
+by making its sate Running and context switching in
+the CPU.
+
+in trap.c
+Here we again check the priority of the processes
+and make the changes in similar way as in the 
+scheduler. Then we check if the current process 
+is in running state.
+We again add it to the next priority queue and call
+the yield function.
+We check if there exists a process which is at higher
+priority than current process, then we just call
+the yield function.
+
+graph:
+
+
+
+
